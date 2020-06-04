@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Return Book</title>
+</head>
+<body>
+
+<h2 align="center">Books Return</h2><br><br>
+
+<form id="Return_book" action="/return_this_book" enctype="multipart/form-data" method="post">
+
+    Book ID:<br>
+    <input type="number" name="BooksID" required><br>
+
+    User ID:<br>
+    <input type="number" name="ReaderID" required><br>
+
+    <button type="submit" id="borrowbutton">Submit</button>
+
+</form>
+
+<p>{{ result }}</p>
+<p><b>BooksID:{{ booksid }}</b></p><br>
+<p><b>Author: </b>{{ author }}</p><br>
+<p><b>Title:</b>{{ title }}</p><br>
+<p><b>Borrowed Date:</b>{{ borroweddate }}</p><br>
+<p><b>Returned Date:</b>{{ cur_date }}</p><br>
+
+<p><b>Days after due date:{{ days }}</b></p><br>
+
+</body>
+</html>

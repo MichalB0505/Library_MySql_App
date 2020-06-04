@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add User</title>
+</head>
+<body>
+
+<h2 align="center">Add a new Member</h2><br><br>
+
+<h3>Enter the details:</h3><br><br>
+<form id="new_member" action="/new_member" enctype="multipart/form-data" method="post">
+
+
+    User ID:<br>
+    <input type="number" name="ReaderID" required><br>
+
+    User Name:<br>
+    <input type="text" name="Name" required><br>
+
+    User Email:<br>
+    <input type="text" name="Email" required><br>
+
+    User Phone Number:<br>
+    <input type="number" name="PhoneNum"><br>
+
+    <button type="submit" id="addmem_button">Submit</button>
+
+
+</form>
+
+<p>{{ result }}</p>
+</body>
+</html>
