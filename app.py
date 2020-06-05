@@ -1,15 +1,15 @@
 from flask import Flask, render_template, request
 import pymysql
-import datetime
+from datetime import date
 
 
 
 connection = pymysql.connect(host='127.0.0.1',
-                             user='root',
-                             password='1q2w3e4rPoi',
+                             user='user1',
+                             password='123456Bd',
                              db='new_schema')
 print("Database connected...")
-connection.query('SET GLOBAL connect_timeout=6000')
+#connection.query('SET GLOBAL connect_timeout=6000')
 
 app = Flask(__name__)
 
@@ -24,21 +24,21 @@ def new_member():
 
 @app.route('/new_member',methods=['POST', 'GET'])
 def add_new_member():
-    #lib_ssn = request.form['Lib_SSN']
     userid = request.form['ReaderID']
     name = str(request.form['Name'])
     email = str(request.form['Email'])
-    phonenum = request.form['PhoneNum']
+    phonenum = str(request.form['PhoneNum'])
 
     cur = connection.cursor()
     try:
-        command = "insert into reader(ReaderID, Name, Email, PhoneNum) values (" + userid + ", " + name + ", '" + email + "','" + phonenum + "');"
+        command = "INSERT INTO reader(ReaderID, Name, Email, PhoneNum) VALUES ("+ userid + ", '" + name + "', '" + email + "','" + phonenum + "');"
         print(command)
         cur.execute(command)
         connection.commit()
         return render_template('index.html')
     except:
         return render_template('addmember.html', result="Podano nieprawidlowe dane")
+    
 
 @app.route('/addbook', methods=['POST', 'GET'])
 def new_book():
@@ -58,11 +58,6 @@ def add_new_book():
         cmd1 = "insert into books(BooksID, Title, Author, Edition, Available, Genre) values (" + booksID + ",'" + title + "', '" + author + "', '" + edition + "', '" + available + "','" + genre + "');"
         cur.execute(cmd1)
         connection.commit()
-       # cur2 = connection.cursor()
-        #cmd2 = "insert into available values(" + book_isbn + ", '" + lang + "', '" + bind + "', '" + description + "', 1);"
-        #print(cmd2)
-        #cur2.execute(cmd2)
-        #connection.commit()
         return render_template('index.html')
     except:
         return render_template('addbook.html', result="Podano bledne dane")
@@ -84,7 +79,7 @@ def get_this_book():
     readerid = request.form['ReaderID']
     mem_cur = connection.cursor()
 
-    cmd1 = "select * from reader where ReaderID =" + readerid + ";"
+    cmd1 = "SELECT * FROM reader where ReaderID =" + readerid + ";"
     #print(cmd1)
     mem_cur.execute(cmd1)
     is_mem = mem_cur.fetchall()
@@ -96,9 +91,14 @@ def get_this_book():
                 
                 days = 21
                 grace = 7
+                id_cursor = connection.cursor()
+                #cmd2 = "SELECT RentalID FROM rental_list ORDER BY RentalID DESC LIMIT 1"
+                #id_cursor.execute(cmd2)
+                #highest_id = id_cursor.fetchall()
+
 
                 borrow_cur = connection.cursor()
-                cmd3 = "INSERT INTO rental_list (RentalID, Date, ReturnDate, BookID, ReaderID) VALUES (" + 0 + ", CURDATE() , CURDATE(), DATE_ADD(CURDATE(), INTERVAL " + str(days) + " DAY), " + str(grace) + ", '" + booksid + "', '" + readerid + "');"
+                cmd3 = "INSERT INTO rental_list (Date, BookID, ReaderID) VALUES (CURDATE() ,'" + booksid + "', '" + readerid + "');"
                 print(cmd3)
                 borrow_cur.execute(cmd3)
 
@@ -124,26 +124,26 @@ def return_this_book():
 
     #try:
     check_cur = connection.cursor()
-    cmd1 = "SELECT ren.RentalID ,ren.Date, ren.ReturnDate, CURDATE(), b.Title, b.Author FROM rental_list as ren, books as b where ren.BookID= " + booksid + " and b.BooksID = ren.BookID;"
+    cmd1 = "SELECT ren.RentalID ,ren.Date, b.Title, b.Author FROM rental_list AS ren, books AS b WHERE ren.BookID= " + booksid + " AND b.BooksID = ren.BookID;"
     print(cmd1)
     check_cur.execute(cmd1)
     result = check_cur.fetchall()
-    print(result[0][3] - result[0][2])
     if (len(result) == 0):
         return render_template("borrowBook.html", result="Ksiazka nie byla wypozyczona")
 
-    days = str(result[0][3] - result[0][2])
-    title = str(result[0][4])
-    author = str(result[0][5])
-    borroweddate = result[0][1]
-    cur_date = result[0][3]
-    print(days, title, author)
+    title = str(result[0][2])
+    author = str(result[0][3])
+    borroweddate = str(result[0][1])
+    cur_date = str(date.today())
+ 
+
+    print(title, author)
     available_cur = connection.cursor()
-    cmd2 = "update books set Available = 1 where BooksID=" + booksid + ";"
+    cmd2 = "UPDATE books SET Available = 1 WHERE BooksID=" + booksid + ";"
     available_cur.execute(cmd2)
 
     delete_cur = connection.cursor()
-    cmd3 = "delete from rental_list where BookID=" + booksid + ";"
+    cmd3 = "DELETE FROM rental_list WHERE BookID=" + booksid + ";"
     delete_cur.execute(cmd3)
 
     connection.commit()
@@ -152,7 +152,7 @@ def return_this_book():
     #except:
     #    return render_template("ReturnBook.html", result="Wrong details provided")
 
-    return render_template("ReturnBook.html", booksid = booksid, title = title, author = author, borroweddate = borroweddate, days=days, result="Receipt", cur_date = cur_date)
+    return render_template("ReturnBook.html", booksid = booksid, title = title, author = author, borroweddate = borroweddate, result="Receipt", cur_date = cur_date)
 
 
 if __name__ == '__main__':
